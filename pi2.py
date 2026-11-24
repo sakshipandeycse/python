@@ -12,6 +12,7 @@ print("Dataset loaded successfully")
 print("Shape of dataset:", df.shape)
 print("Column names of dataset:", df.columns.tolist())
 
+
 # 2. DATA CLEANING
 required_columns = ['latitude', 'longitude', 'price', 'minimum_nights']
 
@@ -23,7 +24,9 @@ if missing:
 for col in required_columns:
     if col == 'price':
         df[col] = pd.to_numeric(
-            df[col].astype(str).str.replace(r'[^\d.]', '', regex=True),
+            df[col].astype(str).str.replace(
+                r'[^\d.]', '', regex=True
+            ),
             errors='coerce'
         )
     else:
@@ -42,6 +45,7 @@ print(df.head())
 
 if df.empty:
     raise ValueError("No valid records found in dataset.")
+
 
 # 3. CREATE DASH APP
 app = Dash(__name__)
@@ -72,7 +76,10 @@ app.layout = html.Div(children=[
         id='price-slider',
         min=0,
         max=max(1000, int(df['price'].max())),
-        value=[0, min(2500, max(1000, int(df['price'].max())))],
+        value=[
+            0,
+            min(2500, max(1000, int(df['price'].max())))
+        ],
         step=100,
         marks=None,
         tooltip={
@@ -91,6 +98,7 @@ app.layout = html.Div(children=[
     )
 
 ], style={'padding': '30px'})
+
 
 # 4. CALLBACK
 @app.callback(
@@ -114,26 +122,34 @@ def update_graph(nights, price_range):
         fig = px.scatter_geo(
             title="No listings found. Change the filters."
         )
+
         fig.update_layout(height=700)
+
         return fig, "No listings found."
 
-    # SCATTER PLOT ON GEOGRAPHICAL MAP
+    # GEOGRAPHICAL WORLD MAP
     fig = px.scatter_geo(
         dff,
         lat='latitude',
         lon='longitude',
         color='price',
+
         hover_name='name' if 'name' in dff.columns else None,
+
         hover_data=['minimum_nights', 'room_type']
             if 'room_type' in dff.columns
             else ['minimum_nights'],
+
         color_continuous_scale='Sunset',
+
         projection='mercator',
+
         title='Airbnb Property Locations',
+
         height=700
     )
 
-    # Automatically fit map to data
+    # MAP SETTINGS - SAME AS YOUR SCREENSHOT
     fig.update_geos(
         fitbounds="locations",
         visible=True,
@@ -149,7 +165,9 @@ def update_graph(nights, price_range):
 
     return fig, count
 
+
 # 5. RUN APPLICATION
 server = app.server
+
 if __name__ == '__main__':
     app.run(debug=True)
